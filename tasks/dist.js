@@ -1,10 +1,12 @@
 /* jslint node: true */
 'use strict';
-module.exports = function(gulp, $, cfg) {
+module.exports = function(gulp, $, cfg, _) {
   var htmlMinOpts = {
     removeComments: true,
     collapseWhitespace: true
   };
+  const path = require('path');
+  const packages = _.map(_.keys(require('../package.json').dependencies), (pkg) => path.join(path.join('./node_modules', pkg), '/**'));
 
   gulp.task('dist', ['index:dist', 'images', 'copyStaticStyles', 'fonts'], function(done) {
     done();
@@ -68,19 +70,21 @@ module.exports = function(gulp, $, cfg) {
   });
 
   gulp.task('fonts', function() {
-    // var fontFilter = $.filter(['**/*.{eot,otf,svg,ttf,woff}'], {
-    //   restore: true
-    // });
-    // return gulp.src($.mainBowerFiles())
-    //   .pipe(fontFilter)
-    //   .pipe(gulp.dest('.dist/fonts'))
-    //   .pipe($.size())
-    //   .pipe(fontFilter.restore);
+    console.log('packages = ', packages);
+    var fontFilter = $.filter(['**/*.{eot,otf,svg,ttf,woff}'], {
+      restore: true
+    });
+    return gulp.src(packages)
+      .pipe(fontFilter)
+      .pipe($.flatten())
+      .pipe(gulp.dest('./fonts'))
+      .pipe($.size())
+      .pipe(fontFilter.restore);
   });
 
   gulp.task('copyStaticStyles', function() {
-    return gulp.src('app/styles/*.css')
-      .pipe(gulp.dest('.dist/styles'))
+    return gulp.src('src/**/*.css')
+      .pipe(gulp.dest('./'))
       .pipe($.size());
   });
 };
